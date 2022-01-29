@@ -3,6 +3,7 @@ import sys
 import os
 
 from loguru import logger
+from github import Github
 
 from app.resources.constants import (
     COMMAND_LINE_OPTIONS, 
@@ -38,12 +39,12 @@ class CommandLine(object):
         getattr(self, args.command)()
 
     def mine_products(self):
-
         parser = argparse.ArgumentParser(
             description = CMD_MINE_PRODUCTS
         )
 
         try:
+            access_token = os.environg.get("GITHUB_ACCESS_TOKEN")
             logger.info("stuff")
 
 
