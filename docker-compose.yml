@@ -1,0 +1,11 @@
+pg_engine:
+    restart: always
+    image: debezium/postgres:14-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - PGPASSWORD=password
+    ports:
+      - 5432:5432
+    volumes:
+      - /var/lib/postgresql/data

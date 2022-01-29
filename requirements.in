@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+jupyter
+pytest
+pytest-cov
+huggingface_hub
+loguru
+PyGithub
+psycopg2
+dependency-injector
+python-dotenv
