@@ -1,12 +1,17 @@
 pandas
 numpy
 matplotlib
+datasets
 jupyter
+pydantic
 pytest
 pytest-cov
 huggingface_hub
 loguru
 PyGithub
+pydriller
 psycopg2
 dependency-injector
 python-dotenv
+asyncpg
+jinja2
