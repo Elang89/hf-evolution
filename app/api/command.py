@@ -68,7 +68,8 @@ class CommandLine(object):
 
             insertion = DatasetDTO(dataset_name=dataset).dict()
 
-            tup_value = tuple(insertion.values())
+            tup_value = str(tuple(insertion.values()))
+            tup_value = tup_value[:-2] + tup_value[-1]
             values = [tup_value]
 
             print(values)
