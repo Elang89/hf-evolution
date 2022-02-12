@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, Dict
 from git import Commit
 from pydriller import Repository, ModifiedFile
 from faker import Faker
@@ -20,6 +20,7 @@ class Extractor(object):
         authors = []
         seen_authors = set()
         files = []
+        seen_files = {}
         commits = []
 
         artifact = Artifact(artifact_name=artifact_name, artifact_type=artifact_type.value)
@@ -47,19 +48,14 @@ class Extractor(object):
                 dmm_unit_interfacing=dmm_unit_interfacing
             )
             
-            files = [ArtifactFile(artifact_id=artifact.id, 
-                artifact_commit_id=artifact_commit.id, 
-                artifact_file_name=file.filename) 
-                for file in commit.modified_files]
-            
-            
+            files = self._create_file_list(seen_files, commit, artifact, artifact_commit)
             file_changes = self._get_file_changes(artifact_commit, files, commit.modified_files)
 
             artifact_commit.file_changes = file_changes
             commits.append(artifact_commit)
 
         artifact.authors = authors
-        artifact.files = files
+        artifact.files = list(seen_files.values())
         artifact.commits = commits
 
         return artifact
@@ -97,6 +93,31 @@ class Extractor(object):
         
         author = list(filter(lambda x: x.author_name == commit.author.name, author_list))[0]
         return author
+    
+    def _create_file_list(self, 
+        seen_files: Dict[str, ArtifactFile], 
+        commit: Commit, artifact: Artifact, 
+        artifact_commit: ArtifactCommit) -> List[ArtifactFile]:
+
+        modified_files = commit.modified_files
+        files = []
+
+        for modified_file in modified_files:
+            if modified_file.filename in seen_files.keys():
+                file = seen_files.get(modified_file.filename)
+                files.append(file)
+            else: 
+                file = ArtifactFile(artifact_id=artifact.id, 
+                artifact_commit_id=artifact_commit.id, 
+                artifact_file_name=modified_file.filename)
+                seen_files.update({modified_file.filename: file})
+                files.append(file) 
+
+            return files 
+                
+
+                
+        
 
 
     

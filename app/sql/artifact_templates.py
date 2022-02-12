@@ -7,13 +7,12 @@ _INSERT_TEMPLATE = """INSERT INTO {{ table }} (
             ,
         {%- endif -%}
     {%- endfor -%}
-) VALUES  
-{%- for value in values -%}
-   {{ value }}
-
-    {%- if not loop.last -%}
-        ,
-    {%- endif -%}
-{%- endfor -%}
-RETURNING id 
+) VALUES (
+    {%- for _ in range(tup_size) -%}
+        %s
+        {%- if not loop.last -%}
+            ,
+        {%- endif -%}
+    {%- endfor -%}
+)
 """

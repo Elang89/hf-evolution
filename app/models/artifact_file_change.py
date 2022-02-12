@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
 
 class ArtifactFileChange(BaseModel):
-    id: UUID = Field(default=uuid4)
+    id: UUID = Field(default_factory=uuid4)
     artifact_file_id: UUID
     artifact_commit_id: UUID
     diff: str

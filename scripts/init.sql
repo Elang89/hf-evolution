@@ -1,3 +1,6 @@
+ ALTER SYSTEM SET wal_level = logical;
+ ALTER SYSTEM SET max_replication_slots = 3;
+ 
  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
  CREATE TABLE authors (
     id UUID NOT NULL,

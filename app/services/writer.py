@@ -1,4 +1,5 @@
 from multiprocessing import Queue
+from pprint import pprint
 from app.models.artifact import Artifact
 from app.services.general_repository import GeneralRepository
 
@@ -16,6 +17,7 @@ class Writer(object):
         files = [file.dict() for file in artifact.files] 
         
         changes = [commit.pop("file_changes") for commit in commits]
+        changes = [change for sublist in changes for change in sublist]
 
         artifact_dict.pop("authors")
         artifact_dict.pop("commits")
@@ -26,3 +28,9 @@ class Writer(object):
         self.repository.insert("authors", authors)
         self.repository.insert("artifact_commits", commits)
         self.repository.insert("artifact_files", files)
+
+        import pdb
+
+        pdb.set_trace()
+            
+        self.repository.insert("artifact_file_changes", changes)

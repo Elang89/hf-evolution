@@ -22,31 +22,13 @@ class GeneralRepository(object):
 
         return (result == 1)
 
-
-
     def insert(self, table: str, data_points: List[Dict[str, Any]]) -> None:
         params = list(data_points[0].keys())
-        values = self._convert_to_sql(data_points)
+        values = [tuple(data_point.values()) for data_point in data_points]
 
-        import pdb
-
-        pdb.set_trace()
-
-        sql = Template(_INSERT_TEMPLATE).render(table=table, params=params, values=values)
+        sql = Template(_INSERT_TEMPLATE).render(table=table, params=params, tup_size=len(values[0]))
 
         cursor = self.conn.cursor()
-        cursor.execute(sql)
+        cursor.executemany(sql, values)
         self.conn.commit()
         
-    def _convert_to_sql(self, data_points: List[Dict[str, Any]]) -> List[Tuple]:
-        values = []
-
-        for data_point in data_points:
-            tup_values = tuple(data_point.values())
-            sql_values = str(tup_values)
-
-            if len(tup_values) == 1: 
-                sql_values = sql_values[:-2] + sql_values[-1]
-            values.append(sql_values)
-
-        return values

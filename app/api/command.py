@@ -3,6 +3,7 @@ import sys
 import huggingface_hub
 import psycopg2
 
+from psycopg2.extras import register_uuid
 from loguru import logger
 from datasets import list_datasets
 
@@ -53,7 +54,8 @@ class CommandLine(object):
             description = CMD_MINE_DATASETS
         )
 
-        try: 
+        try:
+            register_uuid() 
             conn =  psycopg2.connect(user="root", password="password", host="localhost", dbname="hf")
             repository = GeneralRepository(conn)
 

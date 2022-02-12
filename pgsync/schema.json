@@ -1,0 +1,29 @@
+[
+    {
+      "database": "hf",
+      "index": "artifact_file_change_index",
+      "nodes": {
+        "table": "artifact_file_changes",
+        "schema": "public",
+        "columns": ["artifact_commit_id","diff"]
+      }
+    },
+    {
+        "database": "hf",
+        "index": "issue_index",
+        "nodes": {
+            "table": "issues",
+            "schema": "public",
+            "columns": ["artifact_id", "issue_timestamp","issue_description"]
+        }
+    },
+    {
+        "database": "hf",
+        "index": "issue_comments_index",
+        "nodes": {
+            "table": "issue_comments",
+            "schema": "public",
+            "columns": ["issue_id", "issue_comment_timestamp", "issue_comment_body"]
+        }
+    }
+  ]
