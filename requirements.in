@@ -15,3 +15,4 @@ dependency-injector
 python-dotenv
 asyncpg
 jinja2
+faker
