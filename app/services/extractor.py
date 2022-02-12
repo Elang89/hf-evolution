@@ -1,8 +1,11 @@
+import os
+
 from typing import List, Set, Dict
 from git import Commit
 from pydriller import Repository, ModifiedFile
 from faker import Faker
 from pprint import pprint
+from github import Github
 
 from app.models.artifact import Artifact
 from app.models.author import Author
@@ -13,9 +16,11 @@ from app.models.types import ArtifactType
 
 class Extractor(object):
 
+    def __init__(self):
+        self.format = "%Y-%m-%d %H:%M:%S.%f"
+
     def retrieve_data(self, url: str, artifact_name: str, artifact_type: ArtifactType) -> Artifact:
         repo = Repository(url)
-        format = "%Y-%m-%d %H:%M:%S.%f"
 
         authors = []
         seen_authors = set()
@@ -24,6 +29,9 @@ class Extractor(object):
         commits = []
 
         artifact = Artifact(artifact_name=artifact_name, artifact_type=artifact_type.value)
+
+        if artifact_type == ArtifactType.PRODUCT:
+            self._extract_issues()
 
         for commit in repo.traverse_commits():
             dmm_unit_size = commit.dmm_unit_size if commit.dmm_unit_size else 0.0
@@ -37,8 +45,8 @@ class Extractor(object):
                 author_id=str(author.id), 
                 commit_hash=commit.hash,
                 commit_message=commit.msg,
-                author_timestamp=commit.author_date.strftime(format),
-                commit_timestamp=commit.committer_date.strftime(format),
+                author_timestamp=commit.author_date.strftime(self.format),
+                commit_timestamp=commit.committer_date.strftime(self.format),
                 insertions=commit.insertions,
                 deletions=commit.deletions,
                 total_lines_modified=commit.lines,
@@ -114,7 +122,12 @@ class Extractor(object):
                 files.append(file) 
 
             return files 
-                
+    
+    def _extract_issues(self, artifact: Artifact):
+        token = os.environ("GITHUB_ACCESS_TOKEN")
+        g = Github(token)
+
+
 
                 
         

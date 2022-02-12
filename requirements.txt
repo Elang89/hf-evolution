@@ -122,6 +122,8 @@ jinja2==3.0.3
     #   -r requirements.in
     #   nbconvert
     #   notebook
+joblib==1.1.0
+    # via scikit-learn
 jsonschema==4.4.0
     # via nbformat
 jupyter==1.0.0
@@ -199,6 +201,8 @@ numpy==1.22.1
     #   matplotlib
     #   pandas
     #   pyarrow
+    #   scikit-learn
+    #   scipy
 packaging==21.3
     # via
     #   bleach
@@ -305,6 +309,10 @@ requests==2.27.1
     #   fsspec
     #   huggingface-hub
     #   pygithub
+scikit-learn==1.0.2
+    # via sklearn
+scipy==1.8.0
+    # via scikit-learn
 send2trash==1.8.0
     # via notebook
 six==1.16.0
@@ -312,6 +320,8 @@ six==1.16.0
     #   bleach
     #   dependency-injector
     #   python-dateutil
+sklearn==0.0
+    # via -r requirements.in
 smmap==5.0.0
     # via gitdb
 stack-data==0.1.4
@@ -320,6 +330,8 @@ terminado==0.13.1
     # via notebook
 testpath==0.5.0
     # via nbconvert
+threadpoolctl==3.1.0
+    # via scikit-learn
 toml==0.10.2
     # via pytest
 tomli==1.2.3
