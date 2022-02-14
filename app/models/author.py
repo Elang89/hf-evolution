@@ -1,5 +1,4 @@
 import uuid
-from faker import Faker
 from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
 from datetime import datetime
@@ -7,7 +6,6 @@ from datetime import datetime
 class Author(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     author_name: str
-    author_fake_name: str
     author_email: str
 
     def __hash__(self):                                                         

@@ -1,4 +1,4 @@
-_VERIFY_TEMPLATE = "SELECT EXISTS (SELECT 1 FROM {{ table }} WHERE id = {{ id }})"
+_VERIFY_TEMPLATE = "SELECT EXISTS (SELECT 1 FROM {{ table }} WHERE {{ field }} = '{{ value }}')"
 
 _INSERT_TEMPLATE = """INSERT INTO {{ table }} (
     {%- for param in params -%}

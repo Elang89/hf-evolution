@@ -1,11 +1,11 @@
  ALTER SYSTEM SET wal_level = logical;
  ALTER SYSTEM SET max_replication_slots = 3;
- 
+ ALTER SYSTEM SET max_connections = 500;
+
  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
  CREATE TABLE authors (
     id UUID NOT NULL,
     author_name VARCHAR(32) UNIQUE NOT NULL,
-    author_fake_name VARCHAR(32) UNIQUE NOT NULL,
     author_email VARCHAR (32), 
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
@@ -94,7 +94,7 @@
     issue_title VARCHAR(100) UNIQUE NOT NULL,
     issue_description TEXT,
     issue_timestamp TIMESTAMP NOT NULL,
-    issue_comments INTEGER,
+    issue_comment_num INTEGER,
     issue_assignees INTEGER,
     issue_closing_date TIMESTAMP,
     issue_number INTEGER,

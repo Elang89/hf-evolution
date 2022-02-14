@@ -3,7 +3,6 @@ import os
 from typing import List, Set, Dict
 from git import Commit
 from pydriller import Repository, ModifiedFile
-from faker import Faker
 from pprint import pprint
 from github import Github
 
@@ -12,6 +11,8 @@ from app.models.author import Author
 from app.models.artifact_commit import ArtifactCommit
 from app.models.artifact_file import ArtifactFile
 from app.models.artifact_file_change import ArtifactFileChange
+from app.models.issue import Issue
+from app.models.issue_comment import IssueComment
 from app.models.types import ArtifactType
 
 class Extractor(object):
@@ -31,12 +32,12 @@ class Extractor(object):
         artifact = Artifact(artifact_name=artifact_name, artifact_type=artifact_type.value)
 
         if artifact_type == ArtifactType.PRODUCT:
-            self._extract_issues()
+            self._extract_issues(artifact, artifact_name)
 
         for commit in repo.traverse_commits():
-            dmm_unit_size = commit.dmm_unit_size if commit.dmm_unit_size else 0.0
-            dmm_unit_complexity = commit.dmm_unit_complexity if commit.dmm_unit_complexity else 0.0
-            dmm_unit_interfacing = commit.dmm_unit_interfacing if commit.dmm_unit_interfacing else 0.0
+            dmm_unit_size = round(commit.dmm_unit_size, 3) if commit.dmm_unit_size else 0.0
+            dmm_unit_complexity = round(commit.dmm_unit_complexity, 3) if commit.dmm_unit_complexity else 0.0
+            dmm_unit_interfacing = round(commit.dmm_unit_interfacing, 3) if commit.dmm_unit_interfacing else 0.0
 
 
             author = self._create_author(seen_authors, commit, authors)
@@ -55,11 +56,13 @@ class Extractor(object):
                 dmm_unit_complexity=dmm_unit_complexity,
                 dmm_unit_interfacing=dmm_unit_interfacing
             )
-            
-            files = self._create_file_list(seen_files, commit, artifact, artifact_commit)
-            file_changes = self._get_file_changes(artifact_commit, files, commit.modified_files)
 
-            artifact_commit.file_changes = file_changes
+            files = self._create_file_list(seen_files, commit, artifact, artifact_commit)
+
+            if files:
+                file_changes = self._get_file_changes(artifact_commit, files, commit.modified_files)
+                artifact_commit.file_changes = file_changes
+
             commits.append(artifact_commit)
 
         artifact.authors = authors
@@ -75,7 +78,7 @@ class Extractor(object):
 
         for file in files:
             commit_file = list(filter(lambda x: file.artifact_file_name == x.filename, commit_files))[0]
-            cyclomatic_complexity = commit_file.complexity if commit_file.complexity else 0.0
+            cyclomatic_complexity = round(commit_file.complexity, 3) if commit_file.complexity else 0.0
             lines_of_code = commit_file.nloc if commit_file.nloc else 0
 
             file_change = ArtifactFileChange(artifact_file_id=file.id, 
@@ -89,12 +92,10 @@ class Extractor(object):
         return changes
     
     def _create_author(self, set: Set, commit: Commit, author_list: List[Author]) -> Author:
-        fake = Faker()
         if commit.author.name not in set: 
             set.add(commit.author.name)
             author = Author(
-                author_name=commit.author.name, 
-                author_fake_name=fake.name(), 
+                author_name=commit.author.name,  
                 author_email=commit.author.email)
             author_list.append(author)
             return author 
@@ -123,9 +124,42 @@ class Extractor(object):
 
             return files 
     
-    def _extract_issues(self, artifact: Artifact):
-        token = os.environ("GITHUB_ACCESS_TOKEN")
+    def _extract_issues(self, artifact: Artifact, product: str) -> None:
+        token = os.environ.get("GITHUB_ACCESS_TOKEN")
         g = Github(token)
+        repo = g.get_repo(product)
+
+        issues = []
+        repo_issues = repo.get_issues()
+
+        for repo_issue in repo_issues:
+            issue_closing_date = repo_issue.closed_at.strftime() if repo_issue.closed_at else None
+
+            issue = Issue(artifact_id=artifact.id, 
+                issue_title=repo_issue.title,
+                issue_timestamp=repo_issue.created_at.strftime(self.format),
+                issue_closing_date=issue_closing_date,
+                issue_description=repo_issue.body,
+                issue_comment_num=repo_issue.comments,
+                issue_assignees=len(repo_issue.assignees),
+                issue_number=repo_issue.number
+            )
+
+            if repo_issue.get_comments():
+                comments = [
+                    IssueComment(issue_id=issue.id, 
+                        issue_comment_body=comment.body, 
+                        issue_comment_timestamp=comment.created_at.strftime(self.format)
+                    ) for comment in repo_issue.get_comments()
+                ]
+
+                issue.issue_comments = comments
+            issues.append(issue)
+
+        artifact.issues = issues
+
+
+
 
 
 

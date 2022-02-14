@@ -1,9 +1,22 @@
 from multiprocessing import Queue
+from uuid import UUID
 
-from datasets import Dataset
+from loguru import logger
+from app.resources.constants import CONSUMER_KILL_SIG
 
-from app.services.general_repository import DatasetRepository
+from app.services.writer import Writer
 
-def run_workflow(queue: Queue, repository: DatasetRepository):
-    data = queue.get()
+def run_consumer_workflow(queue: Queue, writer: Writer, pid: UUID) -> None:
+    while True: 
+        artifact = queue.get()
+
+        if artifact == CONSUMER_KILL_SIG: 
+            queue.put(artifact)
+            logger.info(f"Consumer-{pid} exiting")
+            break
+
+        logger.info(f"Consumer-{pid} retrieved artifact from queue and inserted into database")
+
+        writer.insert_data(artifact)
+
     
