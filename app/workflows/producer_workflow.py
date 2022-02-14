@@ -24,7 +24,7 @@ def run_producer_workflow(
         queue.put(artifact)
 
         logger.info(f"Producer-{pid} created artifact and inserted into queue")
-        # timeout = random.randint(1, 10)
-        # logger.info(f"Timing out Producer-{pid} for {timeout} seconds")
+        timeout = 5
+        logger.info(f"Timing out Producer-{pid} for {timeout} seconds")
 
-        # time.sleep(timeout)
+        time.sleep(timeout)

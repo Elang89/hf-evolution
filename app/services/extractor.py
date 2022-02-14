@@ -43,7 +43,8 @@ class Extractor(object):
             author = self._create_author(seen_authors, commit, authors)
             artifact_commit = ArtifactCommit(
                 artifact_id=str(artifact.id),
-                author_id=str(author.id), 
+                author_id=str(author.id),
+                author_name=author.author_name, 
                 commit_hash=commit.hash,
                 commit_message=commit.msg,
                 author_timestamp=commit.author_date.strftime(self.format),

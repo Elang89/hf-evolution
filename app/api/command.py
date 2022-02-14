@@ -24,21 +24,14 @@ from app.services.extractor import Extractor
 from app.models.types import ArtifactType
 from app.services.general_repository import GeneralRepository
 from app.services.writer import Writer
+from app.utils.custom_process import CustomProcess
 from app.workflows.producer_workflow import run_producer_workflow
 from app.workflows.consumer_workflow import run_consumer_workflow
 
 
 class CommandLine(object):
-    """This is the command line interface 
-    for data extraction. 
-
-    Args:
-        object (object): default python object
-    """
 
     def __init__(self):
-        """constructor for CommandLine object.
-        """
         parser = argparse.ArgumentParser(
             description = COMMAND_LINE_DESCRIPTION,
             usage = COMMAND_LINE_OPTIONS
@@ -62,7 +55,7 @@ class CommandLine(object):
 
         try:
             register_uuid() 
-            queue = Queue
+            queue = Queue(maxsize=1500)
             pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
             
             dataset_list = list_datasets(with_details=False, with_community_datasets=True)
@@ -72,14 +65,15 @@ class CommandLine(object):
             ]
 
 
-            dataset_list = [dataset_list[x:x + 20] for x in range(0, len(dataset_list), 20)]
+            dataset_list = [dataset_list[x:x + 30] for x in range(0, len(dataset_list), 30)]
             processes = self._initiate_threads(dataset_list, pool, ArtifactType.DATASET)
             
             self._start_parallelization(processes, queue)
 
 
         except ValueError as error:
-            print(error)
+            logger.errors(error)
+            exit(1)
 
 
     def mine_models(self):
@@ -103,17 +97,19 @@ class CommandLine(object):
 
         try:
             register_uuid() 
-            conn =  psycopg2.connect(user="root", password="password", host="localhost", dbname="hf")
-            repository = GeneralRepository(conn)
+            queue = Queue
+            pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
 
-            product = "huggingface/optimum-graphcore"
-            url = f"https://github.com/huggingface/optimum-graphcore"
+            model_list = huggingface_hub.list_models(full=False)
+            model_list = [model.modelId for model in model_list]
+            model_list = [{"artifact_name": model, "artifact_url": f"https://huggingface.co/{model}"} 
+                for model in model_list]
+            
+            model_list = [model_list[x:x + 100] for x in range(0, len(model_list), 100)]
 
-            extractor = Extractor()
-            result = extractor.retrieve_data(url, product, ArtifactType.PRODUCT)
+            processes = self._initiate_threads(model_list, pool, ArtifactType.MODEL)
+            self._start_parallelization(processes, queue)
 
-            writer = Writer(repository)
-            writer.insert_data(result)
 
 
         except ValueError as error:
@@ -137,11 +133,11 @@ class CommandLine(object):
             pid_producer = uuid4()
             pid_consumer = uuid4()
 
-            producer = Process(
+            producer = CustomProcess(
                 target=run_producer_workflow, 
                 args=(queue, artifact_list[artifact_group], extractor, artifact_type, pid_producer))
 
-            consumer = Process(
+            consumer = CustomProcess(
                 target=run_consumer_workflow, 
                 args=(queue, writer, pid_consumer))
 

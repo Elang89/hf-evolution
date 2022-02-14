@@ -9,6 +9,7 @@ class ArtifactCommit(BaseModel):
     id: UUID =  Field(default_factory=uuid4)
     author_id: UUID
     artifact_id: UUID
+    author_name: str
     commit_hash: str
     commit_message: str
     author_timestamp: str

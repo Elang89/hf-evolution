@@ -1,9 +1,10 @@
 from sqlite3 import DatabaseError
 from typing import Any, Dict, List, Tuple
+from uuid import UUID
 from jinja2 import Template
 from pprint import pprint
 
-from app.sql.artifact_templates import _INSERT_TEMPLATE, _VERIFY_TEMPLATE
+from app.sql.artifact_templates import _INSERT_TEMPLATE
 
 
 class GeneralRepository(object): 
@@ -12,14 +13,14 @@ class GeneralRepository(object):
         self.conn = conn
 
 
-    def verify(self, table: str, field: str, value: str) -> bool: 
-        sql = Template(_VERIFY_TEMPLATE).render(table=table, field=field, value=value)
+    def get_author(self, value: str) -> UUID: 
+        sql = "SELECT id FROM authors WHERE author_name = %s"
         cursor = self.conn.cursor()
-        cursor.execute(sql)
+        cursor.execute(sql, (value,))
 
-        result = cursor.fetchone()[0]
+        result = cursor.fetchone()
 
-        return bool(result)
+        return result
 
     def insert(self, table: str, data_points: List[Dict[str, Any]]) -> None:
         params = list(data_points[0].keys())

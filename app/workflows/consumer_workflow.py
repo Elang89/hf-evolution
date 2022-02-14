@@ -7,7 +7,9 @@ from app.resources.constants import CONSUMER_KILL_SIG
 from app.services.writer import Writer
 
 def run_consumer_workflow(queue: Queue, writer: Writer, pid: UUID) -> None:
-    while True: 
+    while True:
+        
+        logger.info(f"Queue Size: {queue.qsize()}") 
         artifact = queue.get()
 
         if artifact == CONSUMER_KILL_SIG: 
@@ -15,8 +17,9 @@ def run_consumer_workflow(queue: Queue, writer: Writer, pid: UUID) -> None:
             logger.info(f"Consumer-{pid} exiting")
             break
 
-        logger.info(f"Consumer-{pid} retrieved artifact from queue and inserted into database")
+        if artifact:
+            logger.info(f"Consumer-{pid} retrieved artifact from queue and inserted into database")
 
-        writer.insert_data(artifact)
+            writer.insert_data(artifact)
 
     

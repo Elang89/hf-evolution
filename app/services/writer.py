@@ -1,4 +1,5 @@
 from typing import Any, Dict, List
+from pprint import pprint
 
 from app.models.artifact import Artifact
 from app.models.artifact_commit import ArtifactCommit
@@ -14,11 +15,13 @@ class Writer(object):
 
     def insert_data(self, artifact: Artifact):
         artifact_dict = dict(artifact)
-
-        authors = self._remove_duplicate_authors(artifact.authors)
-        authors = [author.dict() for author in artifact.authors]
+        
+        authors = artifact.authors
+        authors = self._remove_duplicate_authors(authors)
+        authors = [author.dict() for author in authors]
 
         commits = [commit.dict() for commit in artifact.commits]
+        commits = self._fix_commit_authors(commits)
         files = [file.dict() for file in artifact.files] 
         changes = self._extract_file_changes(commits)
 
@@ -64,20 +67,30 @@ class Writer(object):
             if issue.get("issue_comments"):
                 issue_comments.append(issue.get("issue_comments"))
             issue.pop("issue_comments")
-
-        import pdb
-
-        pdb.set_trace()
         
         return issue_comments
 
+
+    def _fix_commit_authors(self, commits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        
+        for commit in commits:
+            author_id = self.repository.get_author(commit.get("author_name"))
+
+            if author_id  and author_id != commit.get("author_id"):
+                commit.update({"author_id": author_id[0]})
+            
+            commit.pop("author_name")
+        
+        return commits
+
     def _remove_duplicate_authors(self, authors: List[Author]) -> List[Author]:
+        new_authors = []
 
         for author in authors:
-            author_exists = self.repository.verify("authors", "author_name", author.author_name)
+            author_exists = self.repository.get_author(author.author_name)
 
-            if author_exists:
-                authors.remove(author)
+            if not author_exists:
+                new_authors.append(author)
         
-        return authors
+        return new_authors
 
