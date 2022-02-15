@@ -1,6 +1,8 @@
 from multiprocessing import Pipe, Process
 import traceback
 
+from git import GitCommandError
+
 
 class CustomProcess(Process): 
 

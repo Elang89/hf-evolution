@@ -14,17 +14,13 @@ def run_producer_workflow(
     artifacts: List[Dict[str,str]], 
     extractor: Extractor, 
     artifact_type: ArtifactType,
-    pid: UUID) -> None:
+    pid: int) -> None:
 
-    for artifact in artifacts:
+    for counter, artifact in enumerate(artifacts):
         artifact_name  = artifact.get("artifact_name")
         artifact_url = artifact.get("artifact_url")
 
         artifact = extractor.retrieve_data(artifact_url, artifact_name, artifact_type)
         queue.put(artifact)
 
-        logger.info(f"Producer-{pid} created artifact and inserted into queue")
-        timeout = 5
-        logger.info(f"Timing out Producer-{pid} for {timeout} seconds")
-
-        time.sleep(timeout)
+        logger.info(f"Producer-{pid} created artifact, {counter}/{len(artifacts)}")

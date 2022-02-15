@@ -1,37 +1,6 @@
 version: "3.8"
 
 services:
-  elasticsearch:
-    restart: always
-    image: elasticsearch:8.0.0
-    environment:
-      - xpack.security.enabled=false
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ports:
-      - 9200:9200
-      - 9300:9300
-
-  kibana:
-    restart: always
-    image: kibana:8.0.0
-    ports:
-     - 5601:5601
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
-
-  redis:
-    image: redis:6.2.6-alpine
-    ports:
-     - 6379:6379
-
   pg:
     restart: always
     image: postgres:14-alpine
@@ -44,22 +13,6 @@ services:
       - 5432:5432
     volumes:
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - /var/lib/postgresql/data:/var/lib/postgresql/data
+      - ./var/lib/postgresql/data:/var/lib/postgresql/data
   
-  pgsync:
-    restart: always
-    build:
-      context: ./ 
-      dockerfile: pgsync.dockerfile
-    environment:
-      - PG_USER=root
-      - PG_PASSWORD=password
-      - PG_DATABASE=host
-      - PG_HOST=pg
-      - ELASTICSEARCH_HOST=elasticsearch
-      - REDIS_HOST=redis
-    depends_on:
-      - pg
-      - elasticsearch
-      - redis
     
