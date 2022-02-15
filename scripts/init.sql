@@ -5,8 +5,8 @@
  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
  CREATE TABLE authors (
     id UUID NOT NULL,
-    author_name VARCHAR(64) UNIQUE NOT NULL,
-    author_email VARCHAR (64), 
+    author_name VARCHAR(128) UNIQUE NOT NULL,
+    author_email VARCHAR (128), 
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
     CONSTRAINT pkey_author PRIMARY KEY(id)
@@ -17,7 +17,7 @@
 
  CREATE TABLE artifacts (
     id UUID NOT NULL,
-    artifact_name VARCHAR (64) UNIQUE NOT NULL,
+    artifact_name VARCHAR (128) NOT NULL,
     artifact_type SMALLINT NOT NULL, 
     created_at TIMESTAMP  NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
@@ -32,7 +32,7 @@
     id UUID NOT NULL,
     author_id UUID NOT NULL,
     artifact_id UUID NOT NULL,
-    commit_hash VARCHAR(40) UNIQUE NOT NULL,
+    commit_hash VARCHAR(100) UNIQUE NOT NULL,
     commit_message TEXT,
     author_timestamp TIMESTAMP NOT NULL, 
     commit_timestamp TIMESTAMP NOT NULL,
@@ -57,7 +57,7 @@
     id UUID NOT NULL,
     artifact_id UUID NOT NULL,
     artifact_commit_id UUID NOT NULL, 
-    artifact_file_name VARCHAR(40) NOT NULL,
+    artifact_file_name VARCHAR(128) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP, 
     CONSTRAINT pkey_artifact_file PRIMARY KEY(id),

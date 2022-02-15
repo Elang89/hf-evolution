@@ -1,4 +1,5 @@
 import argparse
+from pprint import pprint
 import random
 import sys
 from typing import Dict, List, Tuple
@@ -9,7 +10,7 @@ from psycopg2.pool import ThreadedConnectionPool
 from psycopg2.extras import register_uuid
 from loguru import logger
 from datasets import list_datasets
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
 
 
 from app.resources.constants import (
@@ -25,10 +26,8 @@ from app.services.extractor import Extractor
 from app.models.types import ArtifactType
 from app.services.general_repository import GeneralRepository
 from app.services.writer import Writer
-from app.utils.custom_process import CustomProcess
-from app.workflows.producer_workflow import run_producer_workflow
-from app.workflows.consumer_workflow import run_consumer_workflow
-
+from app.utils.consumer import Consumer
+from app.utils.producer import Producer
 
 class CommandLine(object):
 
@@ -67,14 +66,9 @@ class CommandLine(object):
             ]
 
 
-            dataset_list = [dataset_list[x:x + 30] for x in range(0, len(dataset_list), 30)]
-            # print(len(dataset_list))
-            # print(len(dataset_list[0]))
-
+            dataset_list = [dataset_list[x:x + 150] for x in range(0, len(dataset_list), 150)]
             processes = self._initiate_threads(dataset_list, pool, ArtifactType.DATASET, queue)
 
-            # print(len(processes[0]))
-            
             self._start_parallelization(processes, queue)
 
 
@@ -138,27 +132,27 @@ class CommandLine(object):
         producers = []
         consumers = []
 
-        for counter, artifact_group in enumerate(range(len(artifact_list))):
+        for artifact_group in range(len(artifact_list)):
             extractor = Extractor()
-
-            producer = CustomProcess(
-                target=run_producer_workflow, 
-                args=(queue, artifact_list[artifact_group], extractor, artifact_type, counter))
-
-
-            producers.append(producer)
-
-
-        for counter in range(len(artifact_list ) * 2):
             conn = pool.getconn()
             repository = GeneralRepository(conn)
             writer = Writer(repository)
 
-            consumer = CustomProcess(
-                    target=run_consumer_workflow, 
-                    args=(queue, writer, counter))
+            producer = Producer(
+                queue, 
+                artifact_list[artifact_group], 
+                extractor, 
+                artifact_type
+            )
+            
+            consumer = Consumer(queue, writer)
             
             consumers.append(consumer)
+            producers.append(producer)
+
+           
+
+
         
         return (producers, consumers)
 
@@ -171,13 +165,33 @@ class CommandLine(object):
         for consumer in consumers: 
             consumer.start()
 
-        while producers:
-            for producer_num, producer in enumerate(producers):
-                if not producer.is_alive():
-                    logger.info(f"Producer-{producer_num} finished, joining")
 
-                    producer.join()
-                    producers.pop(producer_num)
+        while producers:
+            for producer in producers:
+                if not producer.is_alive():
+                    if producer.finished_jobs < len(producer.artifacts):
+
+                        logger.info(f"Producer-{producer.pid} down, restarting, jobs: {producer.finished_jobs}")
+
+                        pprint(producer.artifacts)
+
+                        new_producer = Producer(
+                            producer.queue, 
+                            producer.artifacts, 
+                            producer.extractor, 
+                            producer.artifact_type
+                        )
+                        
+                        producer.join() 
+                        producers.remove(producer)
+                        new_producer.start()
+                        producers.append(new_producer)
+                        break
+                        
+
+                    logger.info(f"Producer-{producer.pid} finished, joining")
+
+                    producers.remove(producer)
                     break
         
         queue.put(CONSUMER_KILL_SIG)
