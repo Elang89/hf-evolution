@@ -15,7 +15,7 @@
 
  CREATE TABLE hf_repositories (
     id UUID NOT NULL,
-    repository_name VARCHAR (128) UNIQUE NOT NULL,
+    repository_name VARCHAR (128) NOT NULL,
     repository_type SMALLINT NOT NULL, 
     CONSTRAINT pkey_hf_repositories PRIMARY KEY(id)
  )
@@ -26,7 +26,7 @@
 
  CREATE TABLE hf_commits (
     id UUID NOT NULL,
-    commit_hash VARCHAR(100) UNIQUE NOT NULL,
+    commit_hash VARCHAR(100) NOT NULL,
     commit_message TEXT,
     author_timestamp TIMESTAMP NOT NULL, 
     commit_timestamp TIMESTAMP NOT NULL,
@@ -47,16 +47,13 @@
  CREATE TABLE file_changes (
     id UUID NOT NULL,
     filename VARCHAR(128) NOT NULL,
-    change_type VARCHAR(16), 
+    change_type SMALLINT, 
     diff TEXT,
     added_lines INTEGER,
     deleted_lines INTEGER,
     nloc INTEGER,
-    source_code TEXT,
-    source_code_before TEXT,
-    methods TEXT[],
-    methods_before TEXT[],
-    cyclomatic_complexity NUMERIC, 
+    cyclomatic_complexity NUMERIC,
+    token_count INTEGER, 
     CONSTRAINT pkey_file_change PRIMARY KEY(id)
  )
  WITH (
@@ -69,20 +66,20 @@
     repository_id UUID NOT NULL,
     commit_id UUID NOT NULL, 
     author_id UUID NOT NULL,
-    file_change_id NOT NULL,
-    CONSTRAINT pkey_event (id),
-    CONSTRAINT FOREIGN KEY (repository_id) fkey_hf_repository REFERENCES hf_repositories(id),
-    CONSTRAINT FOREIGN KEY (commit_id) fkey_hf_commit REFERENCES hf_commits(id),
-    CONSTRAINT FOREIGN KEY (author_id) fkey_author REFERENCES authors(id),
-    CONSTRAINT FOREIGN KEY (file_change_id) fkey_file_change REFERENCES file_changes(id) 
+    file_change_id UUID NOT NULL,
+    CONSTRAINT pkey_event PRIMARY KEY (id),
+    CONSTRAINT  fkey_hf_repository FOREIGN KEY (repository_id) REFERENCES hf_repositories(id),
+    CONSTRAINT  fkey_hf_commit FOREIGN KEY (commit_id) REFERENCES hf_commits(id),
+    CONSTRAINT  fkey_author FOREIGN KEY (author_id) REFERENCES authors(id),
+    CONSTRAINT  fkey_file_change FOREIGN KEY  (file_change_id) REFERENCES file_changes(id) 
  ) WITH (
-    OIDS=FALSEs
+    OIDS=FALSE
  );
 
  CREATE TABLE github_repositories (
-    id UUID NOT NULL
-    repository_name VARCHAR(32)
-    CONSTRAINT pkey_github_repository FOREIGN KEY (id)
+    id UUID NOT NULL,
+    repository_name VARCHAR(32),
+    CONSTRAINT pkey_github_repository PRIMARY KEY (id)
  );
 
  CREATE TABLE issues (
@@ -95,7 +92,7 @@
     issue_closing_date TIMESTAMP,
     issue_number INTEGER,
     CONSTRAINT pkey_issue PRIMARY KEY (id),
-    CONSTRAINT fkey_github_repository FOREIGN  KEY (github_repository_id) REFERENCES github_repositories(id) ON DELETE CASCADE
+    CONSTRAINT fkey_github_repository FOREIGN KEY (github_repository_id) REFERENCES github_repositories(id) ON DELETE CASCADE
  )
  WITH (
     OIDS=FALSE

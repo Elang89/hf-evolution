@@ -16,8 +16,9 @@ class Writer(object):
         file_changes = [event.pop("file_change") for event in insert_events]
         commits = [event.pop("commit") for event in insert_events]
 
-        self.repository.insert(file_changes)
-        self.repository.insert(authors)
-        self.repository.insert(commits)
-        self.repository.insert(repositories)
+        self.repository.insert("file_changes",file_changes)
+        self.repository.insert("authors", authors)
+        self.repository.insert("hf_commits", commits)
+        self.repository.insert("hf_repositories", repositories)
+        self.repository.insert("events", insert_events)
 

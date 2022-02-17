@@ -1,14 +1,9 @@
-from csv import excel_tab
-import random
-import time
 import traceback
 
 from multiprocessing import Pipe, Process, Queue
 from typing import List, Dict
-from git import GitCommandError
 from loguru import logger
 
-from app.models.types import ArtifactType
 from app.services.extractor import Extractor
 
 class Producer(Process): 
@@ -43,6 +38,6 @@ class Producer(Process):
             event_list = self.extractor.retrieve_data(repository)
             self.queue.put(event_list)
             
-            logger.info(f"Producer-{self.pid} created artifact, {len(self.artifacts)} left")
-            self.artifacts.remove(repository)
+            logger.info(f"Producer-{self.pid} created event, {len(self.repositories)} left")
+            self.repositories.remove(repository)
 

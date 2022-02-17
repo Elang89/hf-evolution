@@ -76,10 +76,26 @@ class CommandLine(object):
                 for model in model_list]
 
             product_list = [
-                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
-                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
-                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
-                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value}
+                    {
+                        "repository_name": "huggingface/huggingface_hub", 
+                        "repository_url": "https://github.com/huggingface/huggingface_hub", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "huggingface/transformers", 
+                        "repository_url": "https://github.com/huggingface/transformers", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "huggingface/datasets", 
+                        "repository_url": "https://github.com/huggingface/datasets", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "huggingface/tokenizers", 
+                        "repository_url": "https://github.com/huggingface/tokenizers", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    }
                 ]
 
             repositories = dataset_list + model_list + product_list
@@ -151,12 +167,26 @@ class CommandLine(object):
 
         while producers:
             for producer in producers:
-                if len(producer.artifacts) == 0 and not producer.is_alive():                        
+                if len(producer.repositories) == 0 and not producer.is_alive():                        
                     logger.info(f"Producer-{producer.pid} finished, joining")
                     logger.info(f"{len(producers)} left")
                     producers.remove(producer)
                     break
-            
+
+                if len(producer.repositories) > 0 and not producer.is_alive():
+
+                        new_producer = Producer(
+                            producer.queue, 
+                            producer.repositories, 
+                            producer.extractor, 
+                        )
+                        
+                        producer.join() 
+                        producers.remove(producer)
+                        new_producer.start()
+                        producers.append(new_producer)
+                        break
+                        
         
         queue.put(CONSUMER_KILL_SIG)
 
