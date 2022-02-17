@@ -1,0 +1,3 @@
+
+class IssueWriter(object):
+    pass

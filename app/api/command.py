@@ -14,12 +14,10 @@ from multiprocessing import Queue
 
 
 from app.resources.constants import (
-    CMD_MINE_DATASETS,
-    CMD_MINE_MODELS,
+    CMD_MINE_REPOSITORIES,
     COMMAND_LINE_OPTIONS, 
     COMMAND_LINE_DESCRIPTION,
-    CMD_MINE_MODELS, 
-    CMD_MINE_PRODUCTS,
+    CMD_MINE_ISSUES,
     CONSUMER_KILL_SIG
 )
 from app.services.extractor import Extractor
@@ -48,26 +46,49 @@ class CommandLine(object):
         getattr(self, args.command)()
 
 
-    def mine_datasets(self):
+    def mine_repositories(self):
         parser = argparse.ArgumentParser(
-            description = CMD_MINE_DATASETS
+            description = CMD_MINE_REPOSITORIES
         )
 
         try:
             register_uuid() 
-            queue = Queue(maxsize=2000)
+            queue = Queue(maxsize=20000)
             pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
             
             dataset_list = list_datasets(with_details=False, with_community_datasets=True)
-            random.shuffle(dataset_list)
             dataset_list = [
-                {"artifact_name": dataset, "artifact_url": f"https://huggingface.co/datasets/{dataset}"}
-                for dataset in dataset_list
-            ]
+                {
+                    "repository_name": dataset, 
+                    "repository_url": f"https://huggingface.co/datasets/{dataset}", 
+                    "repository_type": ArtifactType.DATASET.value
+                } 
+                for dataset in dataset_list]
+            
+            model_list = huggingface_hub.list_models(full=False)
+            model_list = [model.modelId for model in model_list]
+            model_list = [
+                {
+                    "repository_name": model, 
+                    "repository_url": f"https://huggingface.co/{model}", 
+                    "repository_type": ArtifactType.MODEL.value
+                } 
+                for model in model_list]
 
+            product_list = [
+                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
+                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
+                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value},
+                    {"repository_name": "", "repository_url": "", "repository_type": ArtifactType.PRODUCT.value}
+                ]
 
-            dataset_list = [dataset_list[x:x + 150] for x in range(0, len(dataset_list), 150)]
-            processes = self._initiate_threads(dataset_list, pool, ArtifactType.DATASET, queue)
+            repositories = dataset_list + model_list + product_list
+
+            random.shuffle(repositories)
+            repositories = [repositories[x:x + 2500] for x in range(0, len(repositories), 2500)]
+          
+            
+            processes = self._initiate_threads(queue, pool, repositories)
 
             self._start_parallelization(processes, queue)
 
@@ -77,81 +98,43 @@ class CommandLine(object):
             exit(1)
 
 
-    def mine_models(self):
+    def mine_issues(self):
         parser = argparse.ArgumentParser(
-            description = CMD_MINE_MODELS
+            description = CMD_MINE_ISSUES
         )
 
         try:
-            register_uuid() 
-            queue = Queue(maxsize=2000)
-            pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
-
-            model_list = huggingface_hub.list_models(full=False)
-            random.shuffle(model_list)
-            model_list = [model.modelId for model in model_list]
-            model_list = [{"artifact_name": model, "artifact_url": f"https://huggingface.co/{model}"} 
-                for model in model_list]
-            
-            model_list = [model_list[x:x + 100] for x in range(0, len(model_list), 100)]
-
-            processes = self._initiate_threads(model_list, pool, ArtifactType.MODEL, queue)
-            self._start_parallelization(processes, queue)
+            pass
 
         except ValueError as error:
             logger.error(str(error))
             exit(1)
 
-    def mine_products(self):
-        parser = argparse.ArgumentParser(
-            description = CMD_MINE_PRODUCTS
-        )
-
-        try:
-            register_uuid() 
-            queue = Queue
-            pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
-
-            product_list = []
-            
-
-            processes = self._initiate_threads(product_list, pool, ArtifactType.MODEL)
-            self._start_parallelization(processes, queue)
-
-
-
-        except ValueError as error:
-            logger.error(str(error))
-            exit(1)
-
-    def _initiate_threads(self, 
-        artifact_list: List[Dict[str, str]],
+    def _initiate_threads(self,
+        queue: Queue, 
         pool: ThreadedConnectionPool,
-        artifact_type: ArtifactType, queue: Queue) -> Tuple[List, List]:
+        repositories: List[Dict[str, str]],) -> Tuple[List, List]:
 
         producers = []
         consumers = []
 
-        for artifact_group in range(len(artifact_list)):
-            extractor = Extractor()
+        for repository_group in range(len(repositories)):
             conn = pool.getconn()
+            conn.set_session(autocommit=True)
             repository = GeneralRepository(conn)
+            extractor = Extractor()
             writer = Writer(repository)
 
             producer = Producer(
                 queue, 
-                artifact_list[artifact_group], 
-                extractor, 
-                artifact_type
+                repositories[repository_group], 
+            extractor
             )
-            
+
             consumer = Consumer(queue, writer)
             
             consumers.append(consumer)
             producers.append(producer)
-
-           
-
 
         
         return (producers, consumers)
@@ -168,31 +151,12 @@ class CommandLine(object):
 
         while producers:
             for producer in producers:
-                if not producer.is_alive():
-                    if producer.finished_jobs < len(producer.artifacts):
-
-                        logger.info(f"Producer-{producer.pid} down, restarting, jobs: {producer.finished_jobs}")
-
-                        pprint(producer.artifacts)
-
-                        new_producer = Producer(
-                            producer.queue, 
-                            producer.artifacts, 
-                            producer.extractor, 
-                            producer.artifact_type
-                        )
-                        
-                        producer.join() 
-                        producers.remove(producer)
-                        new_producer.start()
-                        producers.append(new_producer)
-                        break
-                        
-
+                if len(producer.artifacts) == 0 and not producer.is_alive():                        
                     logger.info(f"Producer-{producer.pid} finished, joining")
-
+                    logger.info(f"{len(producers)} left")
                     producers.remove(producer)
                     break
+            
         
         queue.put(CONSUMER_KILL_SIG)
 

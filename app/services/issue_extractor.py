@@ -1,0 +1,3 @@
+
+class IssueExtractor(object): 
+    pass

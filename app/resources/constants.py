@@ -8,9 +8,8 @@ The most commonly used nn commands are:
     mine_products Mines hugging face's github products for information
 """
 
-CMD_MINE_DATASETS = "This command will mine all the datasets from Hugging Face"
-CMD_MINE_MODELS = "This command will mine all the models from Hugging Face"
-CMD_MINE_PRODUCTS = "This command will mine Hugging Face's main API repositories"
+CMD_MINE_REPOSITORIES = "This command will mine all the repositories from Hugging Face"
+CMD_MINE_ISSUES = "This command will mine the issues at Hugging Face's main API repositories"
 
 
 COMMON_ARGS_VALIDATION_ERROR_INCORRECT_NUMBER = "Error: option value must be 1, 2 or 3."

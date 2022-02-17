@@ -1,5 +1,4 @@
 import traceback
-
 from loguru import logger
 from multiprocessing import Pipe, Process, Queue
 from app.resources.constants import CONSUMER_KILL_SIG
@@ -20,22 +19,26 @@ class Consumer(Process):
     def run(self):
         try:
             self.consumer_workflow()
+            self._cconn.send(None)
         except Exception as e:
-            logger.error(e)
+            tb = traceback.format_exc()
+            logger.error(tb)
+            self._cconn.send((e, tb))
 
     def consumer_workflow(self):
         while True:
-            artifact = self.queue.get()
 
-            if artifact == CONSUMER_KILL_SIG: 
-                self.queue.put(artifact)
+            event_list = self.queue.get()
+
+            if event_list == CONSUMER_KILL_SIG: 
+                self.queue.put(event_list)
                 logger.info(f"Consumer-{self.pid} exiting")
                 break
 
-            if artifact:
+            if event_list:
                 logger.info(f"Consumer-{self.pid} db write")
 
-                self.writer.insert_data(artifact)
+                self.writer.insert_data(event_list)
 
     @property
     def exception(self):

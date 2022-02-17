@@ -5,33 +5,27 @@
  CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
  CREATE TABLE authors (
     id UUID NOT NULL,
-    author_name VARCHAR(128) UNIQUE NOT NULL,
+    author_name VARCHAR(128),
     author_email VARCHAR (128), 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP,
     CONSTRAINT pkey_author PRIMARY KEY(id)
  )
  WITH (
     OIDS=FALSE
  );
 
- CREATE TABLE artifacts (
+ CREATE TABLE hf_repositories (
     id UUID NOT NULL,
-    artifact_name VARCHAR (128) NOT NULL,
-    artifact_type SMALLINT NOT NULL, 
-    created_at TIMESTAMP  NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP,
-    CONSTRAINT pkey_artifacts PRIMARY KEY(id)
+    repository_name VARCHAR (128) UNIQUE NOT NULL,
+    repository_type SMALLINT NOT NULL, 
+    CONSTRAINT pkey_hf_repositories PRIMARY KEY(id)
  )
  WITH (
     OIDS=FALSE
  );
 
 
- CREATE TABLE artifact_commits (
+ CREATE TABLE hf_commits (
     id UUID NOT NULL,
-    author_id UUID NOT NULL,
-    artifact_id UUID NOT NULL,
     commit_hash VARCHAR(100) UNIQUE NOT NULL,
     commit_message TEXT,
     author_timestamp TIMESTAMP NOT NULL, 
@@ -43,65 +37,65 @@
     dmm_unit_size NUMERIC,
     dmm_unit_complexity NUMERIC,
     dmm_unit_interfacing NUMERIC,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP,
-    CONSTRAINT pkey_artifact_commit PRIMARY KEY(id),
-    CONSTRAINT fkey_author  FOREIGN KEY (author_id) REFERENCES authors(id) ON DELETE CASCADE,
-    CONSTRAINT fkey_artifact FOREIGN KEY (artifact_id) REFERENCES artifacts(id) ON DELETE CASCADE
+    CONSTRAINT pkey_commit PRIMARY KEY(id)
  )
  WITH (
     OIDS=FALSE
  );
  
- CREATE TABLE artifact_files (
-    id UUID NOT NULL,
-    artifact_id UUID NOT NULL,
-    artifact_commit_id UUID NOT NULL, 
-    artifact_file_name VARCHAR(128) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP, 
-    CONSTRAINT pkey_artifact_file PRIMARY KEY(id),
-    CONSTRAINT fkey_artifact FOREIGN  KEY (artifact_id) REFERENCES artifacts(id) ON DELETE CASCADE,
-    CONSTRAINT fkey_artifact_commit FOREIGN  KEY (artifact_commit_id) REFERENCES artifact_commits(id) ON DELETE CASCADE
- )
- WITH (
-    OIDS=FALSE
- );
 
- CREATE TABLE artifact_file_changes (
+ CREATE TABLE file_changes (
     id UUID NOT NULL,
-    artifact_file_id UUID NOT NULL,
-    artifact_commit_id UUID NOT NULL, 
+    filename VARCHAR(128) NOT NULL,
+    change_type VARCHAR(16), 
     diff TEXT,
     added_lines INTEGER,
     deleted_lines INTEGER,
-    lines_of_code INTEGER,
+    nloc INTEGER,
+    source_code TEXT,
+    source_code_before TEXT,
+    methods TEXT[],
+    methods_before TEXT[],
     cyclomatic_complexity NUMERIC, 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP, 
-    CONSTRAINT pkey_artifact_file_change PRIMARY KEY(id),
-    CONSTRAINT fkey_artifact_file FOREIGN  KEY (artifact_file_id) REFERENCES artifact_files(id) ON DELETE CASCADE,
-    CONSTRAINT fkey_artifact_commit FOREIGN  KEY (artifact_commit_id) REFERENCES artifact_commits(id) ON DELETE CASCADE
+    CONSTRAINT pkey_file_change PRIMARY KEY(id)
  )
  WITH (
     OIDS=FALSE
  );
- 
+
+
+ CREATE TABLE events (
+    id UUID NOT NULL,
+    repository_id UUID NOT NULL,
+    commit_id UUID NOT NULL, 
+    author_id UUID NOT NULL,
+    file_change_id NOT NULL,
+    CONSTRAINT pkey_event (id),
+    CONSTRAINT FOREIGN KEY (repository_id) fkey_hf_repository REFERENCES hf_repositories(id),
+    CONSTRAINT FOREIGN KEY (commit_id) fkey_hf_commit REFERENCES hf_commits(id),
+    CONSTRAINT FOREIGN KEY (author_id) fkey_author REFERENCES authors(id),
+    CONSTRAINT FOREIGN KEY (file_change_id) fkey_file_change REFERENCES file_changes(id) 
+ ) WITH (
+    OIDS=FALSEs
+ );
+
+ CREATE TABLE github_repositories (
+    id UUID NOT NULL
+    repository_name VARCHAR(32)
+    CONSTRAINT pkey_github_repository FOREIGN KEY (id)
+ );
 
  CREATE TABLE issues (
     id UUID NOT NULL,
-    artifact_id UUID NOT NULL, 
-    issue_title VARCHAR(100) UNIQUE NOT NULL,
+    github_repository_id UUID NOT NULL, 
     issue_description TEXT,
     issue_timestamp TIMESTAMP NOT NULL,
     issue_comment_num INTEGER,
     issue_assignees INTEGER,
     issue_closing_date TIMESTAMP,
     issue_number INTEGER,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP,
     CONSTRAINT pkey_issue PRIMARY KEY (id),
-    CONSTRAINT fkey_artifact FOREIGN  KEY (artifact_id) REFERENCES artifacts(id) ON DELETE CASCADE
+    CONSTRAINT fkey_github_repository FOREIGN  KEY (github_repository_id) REFERENCES github_repositories(id) ON DELETE CASCADE
  )
  WITH (
     OIDS=FALSE
@@ -112,8 +106,6 @@
     issue_id UUID NOT NULL,
     issue_comment_body TEXT,
     issue_comment_timestamp TIMESTAMP NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP,
     CONSTRAINT pkey_issue_comment PRIMARY KEY (id),
     CONSTRAINT fkey_issue FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE
  )

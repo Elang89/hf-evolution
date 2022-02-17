@@ -1,7 +1,5 @@
-import uuid
 from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
-from datetime import datetime
 
 class Author(BaseModel):
     id: UUID = Field(default_factory=uuid4)
