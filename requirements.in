@@ -17,3 +17,7 @@ asyncpg
 jinja2
 sklearn
 scipy
+sqlalchemy
+nltk
+mlab
+seaborn
