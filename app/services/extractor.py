@@ -1,8 +1,9 @@
-import hashlib
-import base64
 
+from email.generator import Generator
+from pprint import pprint
 from typing import List, Set, Dict
-from git import Commit
+from git import Commit, GitCommandError
+from loguru import logger
 from pydriller import Repository, ModifiedFile
 from app.models.event import Event
 
@@ -16,16 +17,20 @@ class Extractor(object):
     def __init__(self):
         self.format = "%Y-%m-%d %H:%M:%S.%f"
 
-    def retrieve_data(self, repository: Dict[str, str]) -> List[Event]:
-        repository_name = repository.get("repository_name")
-        repository_type = repository.get("repository_type")
-        repo = Repository(repository.get("repository_url"))
-        events = []
+    def retrieve_data(self, repositories: List[Dict[str, str]]) -> List[Event]:
+        repository_dict = {repository.get("repository_name").split("/")[-1]: 
+            {"repository_url": repository.get("repository_url"), "repository_type": repository.get("repository_type")} 
+        for repository in repositories}
 
-        for repo_commit in repo.traverse_commits():
-            events += self._create_events(repository_name, repository_type, repo_commit, repo_commit.modified_files)
+        repo = Repository([repository[1].get("repository_url") for repository in repository_dict.items()], num_workers=20)
+        
+        for commit in repo.traverse_commits():
+            repository_type = repository_dict.get(commit.project_name).get("repository_type")
 
-        return events
+            events = self._create_events(commit.project_name, repository_type, commit, commit.modified_files)
+            yield events
+
+
 
     def _create_author(self, repo_commit: Commit) -> Author:
         return Author(author_name=repo_commit.author.name, author_email=repo_commit.author.email)

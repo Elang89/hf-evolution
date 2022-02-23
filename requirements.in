@@ -16,4 +16,4 @@ python-dotenv
 asyncpg
 jinja2
 sklearn
-faker
+scipy

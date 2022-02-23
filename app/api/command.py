@@ -1,16 +1,17 @@
 import argparse
-from pprint import pprint
 import random
 import sys
-from typing import Dict, List, Tuple
-from uuid import uuid4
-import huggingface_hub
+import time
+import psycopg2
 
-from psycopg2.pool import ThreadedConnectionPool
+from typing import Any, Dict, List, Tuple, Union
 from psycopg2.extras import register_uuid
 from loguru import logger
 from datasets import list_datasets
+from huggingface_hub import list_models
 from multiprocessing import Queue
+
+from py import process
 
 
 from app.resources.constants import (
@@ -46,7 +47,7 @@ class CommandLine(object):
         getattr(self, args.command)()
 
 
-    def mine_repositories(self):
+    def mine_datasets(self):
         parser = argparse.ArgumentParser(
             description = CMD_MINE_REPOSITORIES
         )
@@ -54,19 +55,45 @@ class CommandLine(object):
         try:
             register_uuid() 
             queue = Queue(maxsize=20000)
-            pool = ThreadedConnectionPool(0, 500, user="root", password="password", host="localhost", dbname="hf")
             
             dataset_list = list_datasets(with_details=False, with_community_datasets=True)
             dataset_list = [
-                {
-                    "repository_name": dataset, 
+                { 
+                    "repository_name": dataset,
                     "repository_url": f"https://huggingface.co/datasets/{dataset}", 
                     "repository_type": ArtifactType.DATASET.value
                 } 
                 for dataset in dataset_list]
             
-            model_list = huggingface_hub.list_models(full=False)
+
+            repositories = dataset_list
+            random.shuffle(repositories)
+
+            repositories = [repositories[x:x + 250] for x in range(0, len(repositories), 250)]
+            
+            processes = self._initiate_threads(queue, repositories, 5432)
+
+            self._start_parallelization(processes)
+            self._monitor_producers(queue, processes)
+
+
+        except ValueError as error:
+            logger.error(error)
+            exit(1)
+
+
+    def mine_models(self):
+        parser = argparse.ArgumentParser(
+            description = CMD_MINE_ISSUES
+        )
+
+        try:
+            register_uuid() 
+            queue = Queue(maxsize=20000)
+
+            model_list = list_models(full=False)
             model_list = [model.modelId for model in model_list]
+            model_list = random.sample(model_list, 3000)
             model_list = [
                 {
                     "repository_name": model, 
@@ -75,6 +102,32 @@ class CommandLine(object):
                 } 
                 for model in model_list]
 
+            repositories =  model_list 
+
+
+            repositories = [repositories[x:x + 250] for x in range(0, len(repositories), 250)]
+
+            random.shuffle(repositories)
+            
+            processes = self._initiate_threads(queue, repositories, 5433)
+
+            self._start_parallelization(processes)
+            self._monitor_producers(queue, processes)
+
+        except ValueError as error:
+            logger.error(str(error))
+            exit(1)
+
+    def mine_products(self):
+        parser = argparse.ArgumentParser(
+            description = CMD_MINE_ISSUES
+        )
+
+        try:
+            register_uuid() 
+            queue = Queue(maxsize=20000)
+
+ 
             product_list = [
                     {
                         "repository_name": "huggingface/huggingface_hub", 
@@ -98,64 +151,61 @@ class CommandLine(object):
                     }
                 ]
 
-            repositories = dataset_list + model_list + product_list
+            repositories =  product_list 
+            repositories = [repositories[x:x + 1] for x in range(0, len(repositories), 1)]
 
             random.shuffle(repositories)
-            repositories = [repositories[x:x + 2500] for x in range(0, len(repositories), 2500)]
-          
             
-            processes = self._initiate_threads(queue, pool, repositories)
+            processes = self._initiate_threads(queue, repositories, 5434)
 
-            self._start_parallelization(processes, queue)
-
-
-        except ValueError as error:
-            logger.errors(error)
-            exit(1)
-
-
-    def mine_issues(self):
-        parser = argparse.ArgumentParser(
-            description = CMD_MINE_ISSUES
-        )
-
-        try:
-            pass
+            self._start_parallelization(processes)
+            self._monitor_producers(queue, processes)
 
         except ValueError as error:
             logger.error(str(error))
             exit(1)
 
-    def _initiate_threads(self,
-        queue: Queue, 
-        pool: ThreadedConnectionPool,
-        repositories: List[Dict[str, str]],) -> Tuple[List, List]:
+    def _initiate_threads(self, 
+            queue: Queue,
+            repositories: List[Dict[str, str]],
+            port: int
+        ) -> List[Producer]:
 
         producers = []
         consumers = []
 
         for repository_group in range(len(repositories)):
-            conn = pool.getconn()
-            conn.set_session(autocommit=True)
-            repository = GeneralRepository(conn)
+            conn1 = psycopg2.connect(host="localhost", port=port, user="root", password="password", dbname="hf")
+            conn1.set_session(autocommit=True)
+            conn2 = psycopg2.connect(host="localhost", port=port, user="root", password="password", dbname="hf")
+            conn2.set_session(autocommit=True)
+            repository1 = GeneralRepository(conn1)
+            repository2 = GeneralRepository(conn2)
             extractor = Extractor()
-            writer = Writer(repository)
+            writer1 = Writer(repository1)
+            writer2 = Writer(repository2)
+
+            work_list = repositories[repository_group][:]
 
             producer = Producer(
                 queue, 
-                repositories[repository_group], 
-            extractor
+                extractor,
+                work_list
             )
 
-            consumer = Consumer(queue, writer)
+            consumer1 = Consumer(queue, writer1)
+            consumer2 = Consumer(queue, writer2)
+
             
-            consumers.append(consumer)
+            consumers.append(consumer1)
+            consumers.append(consumer2)
             producers.append(producer)
 
         
         return (producers, consumers)
 
-    def _start_parallelization(self, processes: Tuple[List, List], queue: Queue):
+    def _start_parallelization(self, processes: Tuple[List, List]) -> None:
+
         producers, consumers = processes
 
         for producer in producers:
@@ -164,34 +214,20 @@ class CommandLine(object):
         for consumer in consumers: 
             consumer.start()
 
+    
+    def _monitor_producers(self, queue: Queue, processes: Tuple[List, List]) -> None:
+        producers, consumers = processes
 
         while producers:
             for producer in producers:
-                if len(producer.repositories) == 0 and not producer.is_alive():                        
-                    logger.info(f"Producer-{producer.pid} finished, joining")
-                    logger.info(f"{len(producers)} left")
+                if not producer.is_alive():
+                    logger.info(f"Producer-{producer.pid} is finished, terminating and joining")
+                    producer.join()
                     producers.remove(producer)
-                    break
 
-                if len(producer.repositories) > 0 and not producer.is_alive():
-
-                        new_producer = Producer(
-                            producer.queue, 
-                            producer.repositories, 
-                            producer.extractor, 
-                        )
                         
-                        producer.join() 
-                        producers.remove(producer)
-                        new_producer.start()
-                        producers.append(new_producer)
-                        break
-                        
-        
         queue.put(CONSUMER_KILL_SIG)
 
         for consumer in consumers:
             consumer.join()
-
-
 

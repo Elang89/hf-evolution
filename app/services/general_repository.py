@@ -20,7 +20,6 @@ class GeneralRepository(object):
         sql = Template(_INSERT_TEMPLATE).render(table=table, params=params, tup_size=len(values[0]))
 
         self.cursor.executemany(sql, values)
-        self.conn.rollback()
 
 
         

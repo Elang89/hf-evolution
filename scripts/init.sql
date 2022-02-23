@@ -15,7 +15,7 @@
 
  CREATE TABLE hf_repositories (
     id UUID NOT NULL,
-    repository_name VARCHAR (128) NOT NULL,
+    repository_name VARCHAR (256) NOT NULL,
     repository_type SMALLINT NOT NULL, 
     CONSTRAINT pkey_hf_repositories PRIMARY KEY(id)
  )
@@ -26,7 +26,7 @@
 
  CREATE TABLE hf_commits (
     id UUID NOT NULL,
-    commit_hash VARCHAR(100) NOT NULL,
+    commit_hash VARCHAR(128) NOT NULL,
     commit_message TEXT,
     author_timestamp TIMESTAMP NOT NULL, 
     commit_timestamp TIMESTAMP NOT NULL,
