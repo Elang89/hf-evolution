@@ -6,7 +6,7 @@ from app.models.issue_comment import IssueComment
 
 class Issue(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    artifact_id: UUID
+    repository_id: UUID
     issue_title: str
     issue_description: str
     issue_timestamp: str

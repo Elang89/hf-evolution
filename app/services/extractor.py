@@ -1,6 +1,7 @@
 
 from email.generator import Generator
 from pprint import pprint
+import time
 from typing import List, Set, Dict
 from git import Commit, GitCommandError
 from loguru import logger
@@ -29,6 +30,7 @@ class Extractor(object):
 
             events = self._create_events(commit.project_name, repository_type, commit, commit.modified_files)
             yield events
+            # time.sleep(6.5)
 
 
 
@@ -36,9 +38,9 @@ class Extractor(object):
         return Author(author_name=repo_commit.author.name, author_email=repo_commit.author.email)
 
     def _create_commit(self, repo_commit: Commit) -> HfCommit:
-        dmm_unit_size = round(repo_commit.dmm_unit_size, 3) if repo_commit.dmm_unit_size else 0.0
-        dmm_unit_complexity = round(repo_commit.dmm_unit_complexity, 3) if repo_commit.dmm_unit_complexity else 0.0
-        dmm_unit_interfacing = round(repo_commit.dmm_unit_interfacing, 3) if repo_commit.dmm_unit_interfacing else 0.0
+        dmm_unit_size = round(repo_commit.dmm_unit_size, 3) if repo_commit.dmm_unit_size else -1.0
+        dmm_unit_complexity = round(repo_commit.dmm_unit_complexity, 3) if repo_commit.dmm_unit_complexity else -1.0
+        dmm_unit_interfacing = round(repo_commit.dmm_unit_interfacing, 3) if repo_commit.dmm_unit_interfacing else -1.0
 
         return HfCommit(
             commit_hash=repo_commit.hash,
