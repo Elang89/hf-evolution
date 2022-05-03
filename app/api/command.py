@@ -129,36 +129,36 @@ class CommandLine(object):
 
  
             product_list = [
-                    # {
-                    #     "repository_name": "huggingface/transformers", 
-                    #     "repository_url": "https://github.com/huggingface/transformers", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
-                    # {
-                    #     "repository_name": "huggingface/datasets", 
-                    #     "repository_url": "https://github.com/huggingface/datasets", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
-                    # {
-                    #     "repository_name": "huggingface/tokenizers", 
-                    #     "repository_url": "https://github.com/huggingface/tokenizers", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
-                    # {
-                    #     "repository_name": "tfx", 
-                    #     "repository_url": "https://github.com/tensorflow/tfx", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
-                    # {
-                    #     "repository_name": "mlflow", 
-                    #     "repository_url": "https://github.com/mlflow/mlflow", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
-                    # {
-                    #     "repository_name": "torchx", 
-                    #     "repository_url": "https://github.com/pytorch/torchx", 
-                    #     "repository_type": ArtifactType.PRODUCT.value
-                    # },
+                    {
+                        "repository_name": "huggingface/transformers", 
+                        "repository_url": "https://github.com/huggingface/transformers", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "huggingface/datasets", 
+                        "repository_url": "https://github.com/huggingface/datasets", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "huggingface/tokenizers", 
+                        "repository_url": "https://github.com/huggingface/tokenizers", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "tfx", 
+                        "repository_url": "https://github.com/tensorflow/tfx", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "mlflow", 
+                        "repository_url": "https://github.com/mlflow/mlflow", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "torchx", 
+                        "repository_url": "https://github.com/pytorch/torchx", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
                     {
                         "repository_name": "realtime", 
                         "repository_url": "https://github.com/supabase/realtime", 
