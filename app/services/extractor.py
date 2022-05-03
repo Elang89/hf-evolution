@@ -30,7 +30,7 @@ class Extractor(object):
 
             events = self._create_events(commit.project_name, repository_type, commit, commit.modified_files)
             yield events
-            # time.sleep(6.5)
+            time.sleep(6.5)
 
 
 
