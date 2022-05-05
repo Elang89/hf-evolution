@@ -4,7 +4,7 @@ from uuid import UUID
 from jinja2 import Template
 from pprint import pprint
 
-from app.sql.artifact_templates import _INSERT_TEMPLATE
+from app.sql.artifact_templates import _GET_TEMPLATE, _INSERT_TEMPLATE
 
 
 class GeneralRepository(object): 
@@ -20,6 +20,17 @@ class GeneralRepository(object):
         sql = Template(_INSERT_TEMPLATE).render(table=table, params=params, tup_size=len(values[0]))
 
         self.cursor.executemany(sql, values)
+
+
+    def get(self, table: str, value: str) -> UUID:
+
+
+        sql = Template(_GET_TEMPLATE).render(table=table, value=value)
+
+        self.cursor.execute(sql)
+        result = self.cursor.fetchone()
+
+        return result
 
 
         

@@ -24,7 +24,7 @@ class Producer(Process):
         self.repositories = repositories
         self.extractor = extractor
     
-    def run(self):
+    def run(self) -> None:
         self.run_producer_workflow()
         
 

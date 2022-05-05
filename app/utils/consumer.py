@@ -5,8 +5,6 @@ from app.resources.constants import CONSUMER_KILL_SIG
 
 from app.services.writer import Writer
 
-
-
 class Consumer(Process): 
 
     def __init__(self, queue: Queue, writer: Writer):

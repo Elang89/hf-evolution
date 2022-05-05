@@ -32,8 +32,6 @@ class Extractor(object):
             yield events
             time.sleep(6.5)
 
-
-
     def _create_author(self, repo_commit: Commit) -> Author:
         return Author(author_name=repo_commit.author.name, author_email=repo_commit.author.email)
 

@@ -4,4 +4,5 @@ from pydantic import BaseModel, Field
 
 class GithubRepository(BaseModel):
     id: UUID = Field(default_factory=uuid4)
-    repository_name = str
+    repository_name: str
+    repository_type: int
