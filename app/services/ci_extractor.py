@@ -1,5 +1,6 @@
 
 from pprint import pprint
+import time
 from typing import List, Dict
 from uuid import UUID, uuid4
 
@@ -37,6 +38,7 @@ class CiExtractor(object):
         for run in runs:
             extracted_run = self.create_run(run)
             yield extracted_run
+            time.sleep(2)
 
 
     def create_run(self, workflow_run: WorkflowRun) -> CiRun:

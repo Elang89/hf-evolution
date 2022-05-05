@@ -1,5 +1,6 @@
 
 from pprint import pprint
+import time
 from typing import List, Dict
 from uuid import UUID, uuid4
 
@@ -36,6 +37,7 @@ class IssueExtractor(object):
         for issue in issues:
             extracted_issue = self.create_issue(issue)
             yield extracted_issue
+            time.sleep(2)
 
 
     def create_issue(self, issue: Issue) -> GithubIssue:

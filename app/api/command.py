@@ -2,10 +2,9 @@ import argparse
 import os
 import random
 import sys
-from github import Github
 import psycopg2
 
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from psycopg2.extras import register_uuid
 from loguru import logger
 from datasets import list_datasets
@@ -23,7 +22,7 @@ from app.resources.constants import (
 from app.services.ci_extractor import CiExtractor
 from app.services.ci_writer import CiWriter
 from app.services.extractor import Extractor
-from app.models.types import GithubRepositoryType, GithubRepositoryType
+from app.models.types import GithubRepositoryType, ArtifactType
 from app.services.general_repository import GeneralRepository
 from app.services.issue_extractor import IssueExtractor
 from app.services.issue_writer import IssueWriter
@@ -137,47 +136,47 @@ class CommandLine(object):
                     {
                         "repository_name": "huggingface/transformers", 
                         "repository_url": "https://github.com/huggingface/transformers", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "huggingface/datasets", 
                         "repository_url": "https://github.com/huggingface/datasets", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "huggingface/tokenizers", 
                         "repository_url": "https://github.com/huggingface/tokenizers", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "tensorflow/tfx", 
                         "repository_url": "https://github.com/tensorflow/tfx", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "mlflow/mlflow", 
                         "repository_url": "https://github.com/mlflow/mlflow", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "pytorch/torchx", 
                         "repository_url": "https://github.com/pytorch/torchx", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
-                        "repository_name": "supabase/realtime", 
-                        "repository_url": "https://github.com/supabase/realtime", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_name": "papercups-io/papercups", 
+                        "repository_url": "https://github.com/papercups-io/papercups", 
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "nalgebra", 
                         "repository_url": "https://github.com/dimforge/nalgebra", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                     {
                         "repository_name": "pyodide/pyodide", 
                         "repository_url": "https://github.com/pyodide/pyodide", 
-                        "repository_type": GithubRepositoryType.PRODUCT.value
+                        "repository_type": ArtifactType.PRODUCT.value
                     },
                 ]
 
@@ -234,8 +233,8 @@ class CommandLine(object):
                     "repository_type": GithubRepositoryType.OTHERML.value
                 },
                 {
-                    "repository_name": "supabase/realtime", 
-                    "repository_url": "https://github.com/supabase/realtime", 
+                    "repository_name": "papercups-io/papercups", 
+                    "repository_url": "https://github.com/papercups-io/papercups", 
                     "repository_type": GithubRepositoryType.SOFTWARE.value
                 },
                 {
@@ -295,8 +294,8 @@ class CommandLine(object):
                     "repository_type": GithubRepositoryType.OTHERML.value
                 },
                 {
-                    "repository_name": "supabase/realtime", 
-                    "repository_url": "https://github.com/supabase/realtime", 
+                    "repository_name": "papercups-io/papercups", 
+                    "repository_url": "https://github.com/papercups-io/papercups", 
                     "repository_type": GithubRepositoryType.SOFTWARE.value
                 },
                 {
