@@ -299,7 +299,7 @@ class CommandLine(object):
                     "repository_type": GithubRepositoryType.SOFTWARE.value
                 },
                 {
-                    "repository_name": "nalgebra", 
+                    "repository_name": "dimforge/nalgebra", 
                     "repository_url": "https://github.com/dimforge/nalgebra", 
                     "repository_type": GithubRepositoryType.SOFTWARE.value
                 },

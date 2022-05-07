@@ -42,11 +42,11 @@
     id UUID NOT NULL,
     github_repository_id UUID NOT NULL,
     run_number INTEGER NOT NULL,
-    event VARCHAR(10) NOT NULL,
+    event VARCHAR(30) NOT NULL,
     run_timestamp TIMESTAMP NOT NULL,
     duration_ms INTEGER, 
-    status VARCHAR(10) NOT NULL,
-    conclusion VARCHAR(10),
+    status VARCHAR(30) NOT NULL,
+    conclusion VARCHAR(30),
     CONSTRAINT pkey_workflow_run PRIMARY KEY (id),
     CONSTRAINT fkey_github_repository FOREIGN KEY (github_repository_id) REFERENCES github_repositories(id) ON DELETE CASCADE
  )

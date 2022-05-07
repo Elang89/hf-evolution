@@ -21,3 +21,5 @@ sqlalchemy
 nltk
 mlab
 seaborn
+pyldavis
+wordcloud
