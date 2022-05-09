@@ -23,3 +23,4 @@ mlab
 seaborn
 pyldavis
 wordcloud
+statsmodels

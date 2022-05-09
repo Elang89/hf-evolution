@@ -4,12 +4,14 @@ import numpy as np
 
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import GridSearchCV
 from typing import Dict, List, Tuple, Union
 from scipy.sparse._csr import csr_matrix
 from nltk import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from collections import Counter
 from wordcloud import WordCloud
+
 
 def clean_text(message: str) -> str:
     stop_words = set(nltk.corpus.stopwords.words("english"))
@@ -21,6 +23,23 @@ def clean_text(message: str) -> str:
     cleaned_text = " ".join(tokens)
 
     return cleaned_text
+
+def perform_grid_search(
+    search_params: Dict[str, List[Union[int, float]]], 
+    vect_text: csr_matrix
+) -> LatentDirichletAllocation:
+    
+    lda = LatentDirichletAllocation(
+        batch_size=128, 
+        learning_method="online", 
+        max_iter=10, n_jobs=1, 
+        evaluate_every=1,
+        random_state=42
+    )
+
+    model = GridSearchCV(cv=None, error_score="raise", estimator=lda, param_grid=search_params)
+    model.fit(vect_text)
+    return model
 
 def calculate_perplexities(search_params: Dict[str, List[Union[int, float]]], vect_text: csr_matrix) -> List[Dict[str, Union[int, float]]]:
     models = []
@@ -34,7 +53,8 @@ def calculate_perplexities(search_params: Dict[str, List[Union[int, float]]], ve
                 max_iter=10, 
                 n_jobs=1, 
                 evaluate_every=1, 
-                learning_decay=l_rate
+                learning_decay=l_rate,
+                random_state=42
             )
             lda.fit_transform(vect_text)
             perplexity = lda.perplexity(vect_text)
@@ -85,11 +105,21 @@ def create_cat_dataframe(topic_dataframe: pd.DataFrame, total: int) -> Tuple[Lis
 
 
 def generate_wordcloud(
-    model: LatentDirichletAllocation, 
-    cv: CountVectorizer
-) -> None:
-    terms_count = 10
+    index: int, 
+    model: LatentDirichletAllocation,
+    vocab: np.ndarray
+) -> WordCloud:
+    
+    words_topic = ""
+    component = model.components_[index]
+    vocabulary_components = zip(vocab, component)
+    sorted_words = sorted(vocabulary_components, key=lambda x:x[1], reverse=True)[:50]
 
-    for index, topic in enumerate(model.components_):
-        abs_topic = abs(topic)
-        topic_terms = [[terms[i],topic[i]] for i in abs_topic.argsort()[:-terms_count-1:-1]]
+    for word in sorted_words:
+        words_topic = words_topic + " " + word[0]
+    
+    wordcloud = WordCloud(background_color="white", width=600, height=400, max_words=8, colormap="plasma")
+    wordcloud.generate(words_topic)
+
+    return wordcloud
+

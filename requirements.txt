@@ -223,11 +223,13 @@ numpy==1.22.1
     #   matplotlib
     #   numexpr
     #   pandas
+    #   patsy
     #   pyarrow
     #   pyldavis
     #   scikit-learn
     #   scipy
     #   seaborn
+    #   statsmodels
     #   wordcloud
 packaging==21.3
     # via
@@ -238,18 +240,22 @@ packaging==21.3
     #   numexpr
     #   pytest
     #   qtpy
+    #   statsmodels
 pandas==1.4.0
     # via
     #   -r requirements.in
     #   datasets
     #   pyldavis
     #   seaborn
+    #   statsmodels
 pandocfilters==1.5.0
     # via nbconvert
 parso==0.8.3
     # via jedi
 pathspec==0.9.0
     # via black
+patsy==0.5.2
+    # via statsmodels
 pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
@@ -354,6 +360,7 @@ scipy==1.8.0
     #   pyldavis
     #   scikit-learn
     #   seaborn
+    #   statsmodels
 seaborn==0.11.2
     # via -r requirements.in
 send2trash==1.8.0
@@ -362,6 +369,7 @@ six==1.16.0
     # via
     #   bleach
     #   dependency-injector
+    #   patsy
     #   python-dateutil
 sklearn==0.0
     # via
@@ -375,6 +383,8 @@ sqlalchemy==1.4.31
     # via -r requirements.in
 stack-data==0.1.4
     # via ipython
+statsmodels==0.13.2
+    # via -r requirements.in
 terminado==0.13.1
     # via notebook
 testpath==0.5.0
