@@ -65,7 +65,7 @@ class CommandLine(object):
                 { 
                     "repository_name": dataset,
                     "repository_url": f"https://huggingface.co/datasets/{dataset}", 
-                    "repository_type": GithubRepositoryType.DATASET.value
+                    "repository_type": ArtifactType.DATASET.value
                 } 
                 for dataset in dataset_list]
             
@@ -73,7 +73,7 @@ class CommandLine(object):
             repositories = dataset_list
             random.shuffle(repositories)
 
-            repositories = [repositories[x:x + 250] for x in range(0, len(repositories), 250)]
+            repositories = [repositories[x:x + 100] for x in range(0, len(repositories), 100)]
             
             processes = self._initiate_threads(queue, repositories, 5432)
 
@@ -102,7 +102,7 @@ class CommandLine(object):
                 {
                     "repository_name": model, 
                     "repository_url": f"https://huggingface.co/{model}", 
-                    "repository_type": GithubRepositoryType.MODEL.value
+                    "repository_type": ArtifactType.MODEL.value
                 } 
                 for model in model_list]
 
