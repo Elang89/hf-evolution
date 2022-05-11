@@ -10,6 +10,8 @@ aiohttp==3.8.1
     #   fsspec
 aiosignal==1.2.0
     # via aiohttp
+arch==5.2.0
+    # via -r requirements.in
 argon2-cffi==21.3.0
     # via notebook
 argon2-cffi-bindings==21.2.0
@@ -218,6 +220,7 @@ numexpr==2.8.1
 numpy==1.22.1
     # via
     #   -r requirements.in
+    #   arch
     #   datasets
     #   gensim
     #   matplotlib
@@ -244,6 +247,7 @@ packaging==21.3
 pandas==1.4.0
     # via
     #   -r requirements.in
+    #   arch
     #   datasets
     #   pyldavis
     #   seaborn
@@ -274,6 +278,8 @@ prompt-toolkit==3.0.26
     # via
     #   ipython
     #   jupyter-console
+property-cached==1.6.4
+    # via arch
 psycopg2==2.9.3
     # via -r requirements.in
 ptyprocess==0.7.0
@@ -356,6 +362,7 @@ scikit-learn==1.0.2
 scipy==1.8.0
     # via
     #   -r requirements.in
+    #   arch
     #   gensim
     #   pyldavis
     #   scikit-learn
@@ -384,7 +391,9 @@ sqlalchemy==1.4.31
 stack-data==0.1.4
     # via ipython
 statsmodels==0.13.2
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   arch
 terminado==0.13.1
     # via notebook
 testpath==0.5.0
