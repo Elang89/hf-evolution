@@ -20,15 +20,16 @@ class Extractor(object):
 
     def retrieve_data(self, repositories: List[Dict[str, str]]) -> List[Event]:
         repository_dict = {repository.get("repository_name").split("/")[-1]: 
-            {"repository_url": repository.get("repository_url"), "repository_type": repository.get("repository_type")} 
+            {"repo_name": repository.get("repository_name"), "repository_url": repository.get("repository_url"), "repository_type": repository.get("repository_type")} 
         for repository in repositories}
 
         repo = Repository([repository[1].get("repository_url") for repository in repository_dict.items()], num_workers=20)
         
         for commit in repo.traverse_commits():
             repository_type = repository_dict.get(commit.project_name).get("repository_type")
+            repo_name = repository_dict.get(commit.project_name).get("repo_name")
 
-            events = self._create_events(commit.project_name, repository_type, commit, commit.modified_files)
+            events = self._create_events(repo_name, repository_type, commit, commit.modified_files)
             yield events
             time.sleep(5)
 

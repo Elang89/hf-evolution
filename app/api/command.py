@@ -50,6 +50,17 @@ class CommandLine(object):
 
         getattr(self, args.command)()
 
+    
+    def test_cmd(self):
+        parser = argparse.ArgumentParser(
+            description = CMD_MINE_REPOSITORIES
+        )
+
+        # model_list = list_models(full=False)
+        # model_list = [model.modelId for model in model_list]
+        dataset_list = list_datasets(with_details=False, with_community_datasets=True)
+        self._compare_lists(dataset_list, 5432, ArtifactType.DATASET.value)
+
 
     def mine_datasets(self):
         parser = argparse.ArgumentParser(
@@ -61,6 +72,8 @@ class CommandLine(object):
             queue = Queue(maxsize=20000)
             
             dataset_list = list_datasets(with_details=False, with_community_datasets=True)
+            dataset_list = self._compare_lists(dataset_list, 5432, ArtifactType.DATASET.value)
+        
             dataset_list = [
                 { 
                     "repository_name": dataset,
@@ -331,11 +344,15 @@ class CommandLine(object):
             conn1.set_session(autocommit=True)
             conn2 = psycopg2.connect(host="localhost", port=port, user="root", password="password", dbname="hf")
             conn2.set_session(autocommit=True)
+            conn3 = psycopg2.connect(host="localhost", port=port, user="root", password="password", dbname="hf")
+            conn3.set_session(autocommit=True)
             repository1 = GeneralRepository(conn1)
             repository2 = GeneralRepository(conn2)
+            repository3 = GeneralRepository(conn3)
             extractor = Extractor()
             writer1 = Writer(repository1)
             writer2 = Writer(repository2)
+            writer3 = Writer(repository3)
 
             work_list = repositories[repository_group][:]
 
@@ -347,10 +364,11 @@ class CommandLine(object):
 
             consumer1 = Consumer(queue, writer1)
             consumer2 = Consumer(queue, writer2)
-
+            consumer3 = Consumer(queue, writer3)
             
             consumers.append(consumer1)
             consumers.append(consumer2)
+            consumers.append(consumer3)
             producers.append(producer)
 
         
@@ -422,4 +440,26 @@ class CommandLine(object):
 
         for consumer in consumers:
             consumer.join()
+
+
+    def _compare_lists(self, artifact_list: List[str], port: int, artifact_type: int) -> List[str]:
+        conn =  psycopg2.connect(host="localhost", port=port, user="root", password="password", dbname="hf")
+        artifact_set = set(artifact_list)
+        sql = f"SELECT DISTINCT repository_name FROM hf_repositories WHERE repository_type = {artifact_type}"
+
+        cursor = conn.cursor()
+        cursor.execute(sql)
+
+        result = cursor.fetchall()
+        result = set([item[0] for item in result])
+
+        difference = artifact_set - result
+
+        print(len(artifact_list))
+        print(len(result))
+        print(len(difference))
+
+        return difference
+        
+
 
