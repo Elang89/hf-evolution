@@ -110,6 +110,7 @@ class CommandLine(object):
 
             model_list = list_models(full=False)
             model_list = [model.modelId for model in model_list]
+            model_list = self._compare_lists(model_list, 5433, ArtifactType.MODEL.value)
             model_list = random.sample(model_list, 3000)
             model_list = [
                 {
