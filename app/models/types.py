@@ -10,3 +10,4 @@ class GithubRepositoryType(IntEnum):
     SOFTWARE = 1
     HFML = 2
     OTHERML = 3
+    HFVISUAL = 4

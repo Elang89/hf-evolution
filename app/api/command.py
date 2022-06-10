@@ -50,16 +50,21 @@ class CommandLine(object):
 
         getattr(self, args.command)()
 
+
+    def run_har(self):
+        parser = argparse.ArgumentParser(
+            description = CMD_MINE_REPOSITORIES
+        )
+
     
     def test_cmd(self):
         parser = argparse.ArgumentParser(
             description = CMD_MINE_REPOSITORIES
         )
 
-        # model_list = list_models(full=False)
-        # model_list = [model.modelId for model in model_list]
-        dataset_list = list_datasets(with_details=False, with_community_datasets=True)
-        self._compare_lists(dataset_list, 5432, ArtifactType.DATASET.value)
+        model_list = list_models(full=False)
+        model_list = [model.modelId for model in model_list]
+        self._compare_lists(model_list, 5433, ArtifactType.DATASET.value)
 
 
     def mine_datasets(self):
@@ -123,7 +128,7 @@ class CommandLine(object):
             repositories =  model_list 
 
 
-            repositories = [repositories[x:x + 250] for x in range(0, len(repositories), 250)]
+            repositories = [repositories[x:x + 100] for x in range(0, len(repositories), 100)]
 
             random.shuffle(repositories)
             
@@ -136,10 +141,26 @@ class CommandLine(object):
             logger.error(str(error))
             exit(1)
 
+
+    def mine_spaces(self):
+        parser = argparse.ArgumentParser(
+            description = CMD_MINE_ISSUES
+        )
+
+        try:
+            register_uuid() 
+            queue = Queue(maxsize=20000)
+
+
+        except ValueError as error:
+            logger.error(str(error))
+            exit(1)
+
     def mine_products(self):
         parser = argparse.ArgumentParser(
             description = CMD_MINE_ISSUES
         )
+        
 
         try:
             register_uuid() 
@@ -192,6 +213,16 @@ class CommandLine(object):
                         "repository_url": "https://github.com/pyodide/pyodide", 
                         "repository_type": ArtifactType.PRODUCT.value
                     },
+                    {
+                        "repository_name": "gradio-app/gradio", 
+                        "repository_url": "https://github.com/gradio-app/gradio", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
+                    {
+                        "repository_name": "streamlit/streamlit", 
+                        "repository_url": "https://github.com/streamlit/streamlit", 
+                        "repository_type": ArtifactType.PRODUCT.value
+                    },
                 ]
 
             repositories =  product_list 
@@ -227,9 +258,19 @@ class CommandLine(object):
                     "repository_type": GithubRepositoryType.HFML.value
                 },
                 {
+                    "repository_name": "gradio-app/gradio", 
+                    "repository_url": "https://github.com/huggingface/gradio-app/gradio", 
+                    "repository_type": GithubRepositoryType.HFML.value
+                },
+                {
+                    "repository_name": "streamlit/streamlit", 
+                    "repository_url": "https://github.com/huggingface/streamlit/streamlit", 
+                    "repository_type": GithubRepositoryType.HFVISUAL.value
+                },
+                {
                     "repository_name": "huggingface/tokenizers", 
                     "repository_url": "https://github.com/huggingface/tokenizers", 
-                    "repository_type": GithubRepositoryType.HFML.value
+                    "repository_type": GithubRepositoryType.HFVISUAL.value
                 },
                 {
                     "repository_name": "tensorflow/tfx", 
@@ -291,6 +332,16 @@ class CommandLine(object):
                     "repository_name": "huggingface/tokenizers", 
                     "repository_url": "https://github.com/huggingface/tokenizers", 
                     "repository_type": GithubRepositoryType.HFML.value
+                },
+                                {
+                    "repository_name": "streamlit/streamlit", 
+                    "repository_url": "https://github.com/huggingface/streamlit/streamlit", 
+                    "repository_type": GithubRepositoryType.HFVISUAL.value
+                },
+                {
+                    "repository_name": "huggingface/tokenizers", 
+                    "repository_url": "https://github.com/huggingface/tokenizers", 
+                    "repository_type": GithubRepositoryType.HFVISUAL.value
                 },
                 {
                     "repository_name": "tensorflow/tfx", 
