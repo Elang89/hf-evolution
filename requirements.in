@@ -1,6 +1,7 @@
 pandas
 numpy
 matplotlib
+arch
 datasets
 jupyter
 pydantic
@@ -25,3 +26,6 @@ pyldavis
 wordcloud
 statsmodels
 arch
+gensim
+spacy
+bokeh

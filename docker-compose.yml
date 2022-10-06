@@ -1,8 +1,9 @@
 version: "3.8"
 
 services:
-  pg:
-    restart: always
+  pg1:
+    restart: unless-stopped
+    container_name: hf_dataset_repositories
     image: postgres:14-alpine
     environment:
       - POSTGRES_USER=root
@@ -13,10 +14,11 @@ services:
       - 5432:5432
     volumes:
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - data:/var/lib/postgresql/data
+      - data1:/var/lib/postgresql/data
 
   pg2:
-    restart: always
+    restart: unless-stopped
+    container_name: hf_model_respositories
     image: postgres:14-alpine
     environment:
       - POSTGRES_USER=root
@@ -29,39 +31,7 @@ services:
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
       - data2:/var/lib/postgresql/data
     
-  pg3:
-    restart: always
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=hf
-      - PGPASSWORD=password
-    ports:
-      - 5434:5432
-    volumes:
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - data3:/var/lib/postgresql/data
-
-  pg4:
-    restart: always
-    image: postgres:14-alpine
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=hf
-      - PGPASSWORD=password
-    ports:
-      - 5435:5432
-    volumes:
-      - ./scripts/init2.sql:/docker-entrypoint-initdb.d/init.sql
-      - data4:/var/lib/postgresql/data
-    
-
 volumes:
-  data:
+  data1:
   data2:
-  data3:
-  data4:
-  
     
