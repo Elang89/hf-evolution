@@ -19,8 +19,8 @@ def clean_text(dataframe: pd.DataFrame) -> List[List[str]]:
     documents = dataframe["commit_message"].to_list()
     stop_words = stopwords.words("english")
     stop_words.extend(["mb", "et", "al", "use", "also", "md", "zip", "gcs", "com", "jsonl", "json",
-    "sa", "cc", "py", "ab", "png", "jpg", "mp4", "dataset", "datum", "information", "neededmore", 
-    "model", "huggingface"])
+    "http", "huggingtweet", "spm", "pth", "https", "sa", "cc", "py", "ab", "png", "jpg", "mp4", 
+    "dataset", "datum", "information", "neededmore", "model", "huggingface"])
     punctuation = set(string.punctuation)
 
     documents = [re.sub("\S*@\S*\s?", "", document) for document in documents]
