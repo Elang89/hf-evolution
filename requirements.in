@@ -29,3 +29,5 @@ arch
 gensim
 spacy
 bokeh
+selenium
+chromedriver-binary
