@@ -18,9 +18,9 @@ def clean_text(dataframe: pd.DataFrame) -> List[List[str]]:
     nlp = spacy.load("en_core_web_sm")
     documents = dataframe["commit_message"].to_list()
     stop_words = stopwords.words("english")
-    stop_words.extend(["mb", "et", "al", "use", "also", "md", "zip", "gcs", "com", "jsonl", "json",
+    stop_words.extend(["mb", "et", "al", "use", "yml" "also", "md", "zip", "gcs", "com", "jsonl", "json",
     "http", "huggingtweet", "spm", "pth", "https", "sa", "cc", "py", "ab", "png", "jpg", "mp4", 
-    "dataset", "datum", "information", "neededmore", "model", "huggingface"])
+    "dataset", "datum", "information", "neededmore", "model", "huggingface", "txt", "pkl"])
     punctuation = set(string.punctuation)
 
     documents = [re.sub("\S*@\S*\s?", "", document) for document in documents]
@@ -150,7 +150,7 @@ def generate_wordcloud(
     named_topic = named_topics.get(topic)
     words = model.show_topic(topic)
     text = {word: value for word, value in words}
-    wordcloud = WordCloud(background_color="white", width=600, height=400, max_words=max_words, colormap="autumn")
+    wordcloud = WordCloud(background_color="white", width=600, height=400, max_words=max_words, colormap="plasma")
     wordcloud.generate_from_frequencies(text)
 
     return (named_topic, wordcloud)
