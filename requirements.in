@@ -11,6 +11,7 @@ huggingface_hub
 loguru
 PyGithub
 pydriller
+powerlaw
 psycopg2
 dependency-injector
 python-dotenv

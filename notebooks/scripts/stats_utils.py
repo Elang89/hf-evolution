@@ -137,18 +137,8 @@ def arch_test(dataframe: pd.DataFrame, column: str) -> Tuple[float, float, float
 def create_tests_df(dataframe: pd.DataFrame) -> pd.DataFrame:
     cols = [
         "Time Series", 
-        "ADF Statistic", 
-        "ADF P-Value", 
-        "KPSS Statistic", 
-        "KPSS P-Value",
         "White T Statistic", 
         "White P-Value",
-        "White F Statistic",
-        "White FP-Value",
-        "ARCH Lagrange Multiplier",
-        "ARCH P-Value",
-        "ARCH F Statistic",
-        "ARCH FP-Value "
     ]
     values = []
 
@@ -161,18 +151,8 @@ def create_tests_df(dataframe: pd.DataFrame) -> pd.DataFrame:
 
         curr_val = [
             name, 
-            adf_statistic, 
-            adf_p, 
-            kpss_statistic, 
-            kpss_p,
             white_statistic, 
             white_p, 
-            white_fstatistic, 
-            white_fp,
-            arch_statistic,
-            arch_p,
-            arch_fstatistic, 
-            arch_fp
         ]
         values.append(curr_val)
 
